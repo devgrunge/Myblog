@@ -2,15 +2,13 @@
   "name": "blog",
   "private": true,
   "version": "1.0.0",
-  "workspaces": [
-    "backend",
-    "shared",
-    "frontend"
-  ],
+  "packageManager": "pnpm@9.10.0",
   "scripts": {
-    "build": "npm run --workspaces build",
-    "typecheck": "npm run --workspaces typecheck",
-    "lint": "npm run --workspaces lint",
-    "test": "npm run --workspaces test"
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "build": "pnpm -r run build",
+    "typecheck": "pnpm -r run typecheck",
+    "lint": "pnpm -r run lint",
+    "test": "pnpm -r run test"
   }
 }
