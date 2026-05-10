@@ -25,12 +25,15 @@ export const postsRouter = router({
   list: procedure
     .input(z.object({
       limit: z.number().min(1).max(50).default(10),
+      cursor: z.number().int().min(0).optional(),
       status: postStatusSchema.optional(),
       categorySlug: z.string().optional()
     }))
     .query(async ({ ctx, input }) => {
+      const offset = input.cursor ?? 0;
       const items = await ctx.db.query.posts.findMany({
-        limit: input.limit,
+        limit: input.limit + 1,
+        offset,
         where: input.status ? eq(posts.status, input.status) : undefined,
         orderBy: [desc(posts.createdAt)],
         with: {
@@ -43,11 +46,16 @@ export const postsRouter = router({
         }
       });
 
-      if (!input.categorySlug) {
-        return items;
-      }
+      const filtered = input.categorySlug
+        ? items.filter((item) => item.postCategories.some((pc) => pc.category.slug === input.categorySlug))
+        : items;
 
-      return items.filter((item) => item.postCategories.some((pc) => pc.category.slug === input.categorySlug));
+      const hasMore = filtered.length > input.limit;
+
+      return {
+        items: filtered.slice(0, input.limit),
+        nextCursor: hasMore ? offset + input.limit : null
+      };
     }),
 
   bySlug: procedure

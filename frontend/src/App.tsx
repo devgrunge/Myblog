@@ -1,16 +1,17 @@
+import { Navigate, Route, Routes } from "react-router-dom";
+import { AppShell } from "./components/layout/AppShell";
 import { HomePage } from "./pages/HomePage";
-import { useUIStore } from "./stores/uiStore";
+import { PostDetailsPage } from "./pages/PostDetailsPage";
 
 const App = () => {
-  const theme = useUIStore((state) => state.theme);
-  const toggleSidebar = useUIStore((state) => state.toggleSidebar);
-  const sidebarOpen = useUIStore((state) => state.sidebarOpen);
-
   return (
-    <div data-theme={theme}>
-      <button onClick={toggleSidebar} type="button">{sidebarOpen ? "Fechar" : "Abrir"} menu</button>
-      <HomePage />
-    </div>
+    <AppShell>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/post/:slug" element={<PostDetailsPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AppShell>
   );
 };
 
