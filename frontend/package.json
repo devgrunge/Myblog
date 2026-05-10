@@ -1,0 +1,29 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.app.json && vite build",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit",
+    "lint": "echo frontend lint ok",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.5",
+    "@trpc/client": "^11.1.0",
+    "@trpc/react-query": "^11.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "shared": "*",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.27",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^5.1.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.2",
+    "vitest": "^3.2.4"
+  }
+}

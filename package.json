@@ -1,0 +1,16 @@
+{
+  "name": "blog",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "backend",
+    "shared",
+    "frontend"
+  ],
+  "scripts": {
+    "build": "npm run --workspaces build",
+    "typecheck": "npm run --workspaces typecheck",
+    "lint": "npm run --workspaces lint",
+    "test": "npm run --workspaces test"
+  }
+}
