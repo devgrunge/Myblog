@@ -9,7 +9,7 @@ export const Header = () => {
         <div className="flex h-16 items-center justify-between">
           <Link to="/" className="inline-flex items-center gap-2 text-zinc-900">
             <NewspaperIcon className="h-6 w-6" />
-            <span className="text-sm font-semibold tracking-wide">BLOG</span>
+            <span className="text-sm font-semibold tracking-wide">The Devgrunge's Blog</span>
           </Link>
         </div>
       </Container>

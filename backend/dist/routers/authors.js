@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { authors } from "../db/schema.js";
-import { procedure, router } from "../trpc.js";
+import { procedure, protectedProcedure, router } from "../trpc.js";
 export const authorsRouter = router({
     list: procedure.query(async ({ ctx }) => {
         return ctx.db.query.authors.findMany({
@@ -14,7 +14,7 @@ export const authorsRouter = router({
         .query(async ({ ctx, input }) => {
         return ctx.db.query.authors.findFirst({ where: eq(authors.id, input.id) });
     }),
-    create: procedure
+    create: protectedProcedure
         .input(z.object({
         name: z.string().min(1),
         email: z.string().email(),
@@ -32,7 +32,7 @@ export const authorsRouter = router({
         });
         return ctx.db.query.authors.findFirst({ where: eq(authors.id, id) });
     }),
-    update: procedure
+    update: protectedProcedure
         .input(z.object({
         id: z.string().min(1),
         name: z.string().min(1).optional(),
@@ -55,7 +55,7 @@ export const authorsRouter = router({
         await ctx.db.update(authors).set(updates).where(eq(authors.id, input.id));
         return ctx.db.query.authors.findFirst({ where: eq(authors.id, input.id) });
     }),
-    remove: procedure
+    remove: protectedProcedure
         .input(z.object({ id: z.string().min(1) }))
         .mutation(async ({ ctx, input }) => {
         await ctx.db.delete(authors).where(eq(authors.id, input.id));

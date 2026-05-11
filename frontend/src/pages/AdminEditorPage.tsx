@@ -7,6 +7,10 @@ import { useAdminAuthStore } from "../stores/adminAuthStore";
 export const AdminEditorPage = () => {
   const isAuthenticated = useAdminAuthStore((state) => state.isAuthenticated);
   const logout = useAdminAuthStore((state) => state.logout);
+  const [authorName, setAuthorName] = useState("");
+  const [authorEmail, setAuthorEmail] = useState("");
+  const [authorAvatarUrl, setAuthorAvatarUrl] = useState("");
+  const [authorBio, setAuthorBio] = useState("");
   const [categoryName, setCategoryName] = useState("");
   const [categoryDescription, setCategoryDescription] = useState("");
   const [title, setTitle] = useState("");
@@ -20,6 +24,19 @@ export const AdminEditorPage = () => {
   const utils = trpc.useUtils();
   const categoriesQuery = trpc.categories.list.useQuery();
   const authorsQuery = trpc.authors.list.useQuery();
+
+  const createAuthorMutation = trpc.authors.create.useMutation({
+    onSuccess: async (author) => {
+      setAuthorName("");
+      setAuthorEmail("");
+      setAuthorAvatarUrl("");
+      setAuthorBio("");
+      setAuthorId(author?.id ?? "");
+      setMessage("Author created.");
+      await utils.authors.list.invalidate();
+    },
+    onError: () => setMessage("Failed to create author.")
+  });
 
   const createCategoryMutation = trpc.categories.create.useMutation({
     onSuccess: async () => {
@@ -60,6 +77,55 @@ export const AdminEditorPage = () => {
 
         <div className="grid gap-6 lg:grid-cols-2">
           <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+            <h2 className="text-lg font-medium text-zinc-900">Create author</h2>
+            <form
+              className="mt-4 space-y-3"
+              onSubmit={(event) => {
+                event.preventDefault();
+                setMessage("");
+                createAuthorMutation.mutate({
+                  name: authorName,
+                  email: authorEmail,
+                  avatarUrl: authorAvatarUrl || undefined,
+                  bio: authorBio || undefined
+                });
+              }}
+            >
+              <input
+                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+                placeholder="Author name"
+                value={authorName}
+                onChange={(event) => setAuthorName(event.target.value)}
+                required
+              />
+              <input
+                type="email"
+                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+                placeholder="Author email"
+                value={authorEmail}
+                onChange={(event) => setAuthorEmail(event.target.value)}
+                required
+              />
+              <input
+                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+                placeholder="Avatar URL"
+                value={authorAvatarUrl}
+                onChange={(event) => setAuthorAvatarUrl(event.target.value)}
+              />
+              <textarea
+                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm"
+                placeholder="Bio"
+                value={authorBio}
+                onChange={(event) => setAuthorBio(event.target.value)}
+                rows={3}
+              />
+              <button type="submit" className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white" disabled={createAuthorMutation.isPending}>
+                {createAuthorMutation.isPending ? "Saving..." : "Create author"}
+              </button>
+            </form>
+          </section>
+
+          <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
             <h2 className="text-lg font-medium text-zinc-900">Create category</h2>
             <form
               className="mt-4 space-y-3"
@@ -89,7 +155,7 @@ export const AdminEditorPage = () => {
             </form>
           </section>
 
-          <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm lg:col-span-2">
             <h2 className="text-lg font-medium text-zinc-900">Create post (Markdown)</h2>
             <form
               className="mt-4 space-y-3"
