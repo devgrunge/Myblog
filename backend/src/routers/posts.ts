@@ -3,7 +3,7 @@ import { nanoid } from "nanoid";
 import slugify from "slugify";
 import { z } from "zod";
 import { comments, postCategories, posts } from "../db/schema.js";
-import { procedure, router } from "../trpc.js";
+import { procedure, protectedProcedure, router } from "../trpc.js";
 
 const postStatusSchema = z.enum(["draft", "published", "archived"]);
 
@@ -78,7 +78,7 @@ export const postsRouter = router({
       });
     }),
 
-  create: procedure
+  create: protectedProcedure
     .input(createPostSchema)
     .mutation(async ({ ctx, input }) => {
       const id = nanoid();
@@ -117,7 +117,7 @@ export const postsRouter = router({
       });
     }),
 
-  update: procedure
+  update: protectedProcedure
     .input(updatePostSchema)
     .mutation(async ({ ctx, input }) => {
       const { id, categoryIds, ...rest } = input;
@@ -158,7 +158,7 @@ export const postsRouter = router({
       });
     }),
 
-  remove: procedure
+  remove: protectedProcedure
     .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.delete(posts).where(eq(posts.id, input.id));
