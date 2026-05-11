@@ -11,19 +11,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Backend checks
-        run: npm --workspace backend run test && npm --workspace backend run build
+        run: pnpm --filter backend run test && pnpm --filter backend run build
 
       - name: Frontend build
-        run: npm --workspace frontend run build
+        run: pnpm --filter frontend run build
 
       - name: Deploy to Oracle VM
         uses: appleboy/ssh-action@v1.2.0
@@ -34,8 +40,11 @@ jobs:
           script: |
             cd /opt/blog-app
             git pull origin main
-            npm ci
-            npm --workspace backend run build
+            pnpm install
+            export OCI_CLI_AUTH=api_key
+            export DATABASE_URL="$(oci secrets secret-bundle get --secret-id "${{ secrets.OCI_DB_SECRET_ID }}" --query 'data."secret-bundle-content".content' --raw-output | base64 --decode)"
+            pnpm --filter backend run db:migrate
+            pnpm --filter backend run build
             pm2 restart blog-backend
-            npm --workspace frontend run build
+            pnpm --filter frontend run build
             cp -r frontend/dist/* /var/www/html/

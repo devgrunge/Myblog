@@ -9,7 +9,12 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "echo backend lint ok",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
+    "db:migrate": "mkdir -p data && drizzle-kit migrate --config=drizzle.config.ts",
+    "db:init:local": "DATABASE_URL=file:./data/blog.db pnpm run db:migrate",
+    "db:debug": "node --input-type=module -e \"import Database from 'better-sqlite3'; const raw=process.env.DATABASE_URL ?? 'file:./data/blog.db'; const path=raw.startsWith('file:') ? raw.slice(5) : raw; const db=new Database(path,{readonly:true}); const tables=db.prepare('select name from sqlite_master where type=\\'table\\' and name not like \\'sqlite_%\\' order by name').all(); console.log('DATABASE_URL=' + raw); console.log('tables=' + (tables.map((t)=>t.name).join(', ') || '(none)')); db.close();\"",
+    "db:debug:prod": "DATABASE_URL=$(oci secrets secret-bundle get --secret-id \"$OCI_DB_SECRET_ID\" --query 'data.\"secret-bundle-content\".content' --raw-output | base64 --decode) pnpm run db:debug"
   },
   "dependencies": {
     "@fastify/cors": "^10.1.0",
