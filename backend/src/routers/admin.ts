@@ -6,6 +6,11 @@ export const adminRouter = router({
     .input(z.object({ username: z.string().min(1), password: z.string().min(1) }))
     .mutation(({ input }) => {
       const ok = validateAdminCredentials(input.username, input.password);
+      console.info("[admin-auth] login-mutation", {
+        providedUsernameLength: input.username.trim().length,
+        providedPasswordLength: input.password.trim().length,
+        isMatch: ok
+      });
       return { ok };
     })
 });

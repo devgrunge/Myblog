@@ -1,12 +1,30 @@
 import { TRPCError, initTRPC } from "@trpc/server";
 import type { CreateFastifyContextOptions } from "@trpc/server/adapters/fastify";
+import "./env.js";
 import { db } from "./db/index.js";
 
 const isValidAdmin = (username?: string, password?: string) => {
-  const expectedUsername = process.env.ADMIN_USERNAME;
-  const expectedPassword = process.env.ADMIN_PASSWORD;
-  if (!expectedUsername || !expectedPassword) return false;
-  return username === expectedUsername && password === expectedPassword;
+  const expectedUsername = process.env.ADMIN_USERNAME ?? process.env.ADMIN_USER;
+  const expectedPassword = process.env.ADMIN_PASSWORD ?? process.env.ADMIN_PASS;
+  const normalizedUsername = username?.trim() ?? "";
+  const normalizedPassword = password?.trim() ?? "";
+  const normalizedExpectedUsername = expectedUsername?.trim() ?? "";
+  const normalizedExpectedPassword = expectedPassword?.trim() ?? "";
+  const hasExpectedCredentials = Boolean(normalizedExpectedUsername && normalizedExpectedPassword);
+  const isMatch = hasExpectedCredentials && normalizedUsername === normalizedExpectedUsername && normalizedPassword === normalizedExpectedPassword;
+
+  console.info("[admin-auth] credential-check", {
+    hasExpectedCredentials,
+    hasAdminUsernameEnv: Boolean(process.env.ADMIN_USERNAME ?? process.env.ADMIN_USER),
+    hasAdminPasswordEnv: Boolean(process.env.ADMIN_PASSWORD ?? process.env.ADMIN_PASS),
+    providedUsernameLength: normalizedUsername.length,
+    providedPasswordLength: normalizedPassword.length,
+    expectedUsernameLength: normalizedExpectedUsername.length,
+    expectedPasswordLength: normalizedExpectedPassword.length,
+    isMatch
+  });
+
+  return isMatch;
 };
 
 export const createContext = async (opts: CreateFastifyContextOptions) => {
@@ -14,6 +32,13 @@ export const createContext = async (opts: CreateFastifyContextOptions) => {
   const password = opts.req.headers["x-admin-password"];
   const adminUsername = Array.isArray(username) ? username[0] : username;
   const adminPassword = Array.isArray(password) ? password[0] : password;
+
+  console.info("[admin-auth] context-headers", {
+    hasHeaderUsername: Boolean(adminUsername),
+    hasHeaderPassword: Boolean(adminPassword),
+    usernameLength: (adminUsername ?? "").trim().length,
+    passwordLength: (adminPassword ?? "").trim().length
+  });
 
   return {
     db,
